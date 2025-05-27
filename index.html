@@ -12,35 +12,43 @@
 <body>
   <h1>FiveM Server Names</h1>
   <table>
-    <thead>
-      <tr><th>Timestamp</th><th>Name</th></tr>
-    </thead>
-    <tbody id="data-table"></tbody>
-  </table>
+  <thead>
+    <tr><th>Timestamp</th><th>Player Name</th></tr>
+  </thead>
+  <tbody id="data-table"></tbody>
+</table>
 
   <script>
-   function stripColorCodes(text) {
-  return text.replace(/\^\d/g, ''); // removes ^0 to ^9
-}
+  async function fetchData() {
+    try {
+      const res = await fetch("https://servers-frontend.fivem.net/api/servers/single/4793k5");
+      const json = await res.json();
 
-async function fetchData() {
-  try {
-    const res = await fetch("https://servers-frontend.fivem.net/api/servers/single/4793k5");
-    const json = await res.json();
-    let name = json?.Data?.hostname || "Unknown";
-    name = stripColorCodes(name); // clean the name
+      const players = json?.Data?.players || [];
+      const table = document.getElementById("data-table");
 
-    const table = document.getElementById("data-table");
-    const row = table.insertRow(0);
-    row.insertCell(0).innerText = new Date().toLocaleTimeString();
-    row.insertCell(1).innerText = name;
-  } catch (err) {
-    console.error("Error fetching data:", err);
+      // Clear old rows
+      table.innerHTML = '';
+
+      if (players.length === 0) {
+        const row = table.insertRow();
+        row.insertCell(0).innerText = new Date().toLocaleTimeString();
+        row.insertCell(1).innerText = "(No players online)";
+      } else {
+        players.forEach(player => {
+          const row = table.insertRow();
+          row.insertCell(0).innerText = new Date().toLocaleTimeString();
+          row.insertCell(1).innerText = player.name;
+        });
+      }
+    } catch (err) {
+      console.error("Error fetching data:", err);
+    }
   }
-}
 
-    fetchData();
-    setInterval(fetchData, 60000);
-  </script>
+  fetchData(); // run immediately
+  setInterval(fetchData, 60000); // run every 60 seconds
+</script>
+
 </body>
 </html>
